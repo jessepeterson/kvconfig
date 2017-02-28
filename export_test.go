@@ -10,7 +10,7 @@ func TestSimpleStruct1(t *testing.T) {
 		TestPtrInt    *int    `kvconfig:"test_ptr_int"`
 	}
 
-	testStr := "testptrstr"
+	testStr := "test2"
 	testInt := 2
 
 	ts := TestStruct{
@@ -27,7 +27,7 @@ func TestSimpleStruct1(t *testing.T) {
 	testTable := map[string]string{
 		"test_string_0":     "test",
 		"test_int_0":        "1",
-		"test_ptr_string_0": "testptrstr",
+		"test_ptr_string_0": "test2",
 		"test_ptr_int_0":    "2",
 	}
 
