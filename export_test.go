@@ -4,10 +4,10 @@ import "testing"
 
 func TestSimpleStruct1(t *testing.T) {
 	type TestStruct struct {
-		TestString    string  `config:"test_string"`
-		TestInt       int     `config:"test_int"`
-		TestPtrString *string `config:"test_ptr_string"`
-		TestPtrInt    *int    `config:"test_ptr_int"`
+		TestString    string  `kvconfig:"test_string"`
+		TestInt       int     `kvconfig:"test_int"`
+		TestPtrString *string `kvconfig:"test_ptr_string"`
+		TestPtrInt    *int    `kvconfig:"test_ptr_int"`
 	}
 
 	testStr := "testptrstr"

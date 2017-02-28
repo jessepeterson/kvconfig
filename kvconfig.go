@@ -3,13 +3,15 @@
 // Key names end in an underscore and integer (e.g. "_2").
 // This is to facilitate e.g. arrays of structures and the multiple values they hold.
 // When parsing CLI arguments or envvars names may be transformed to conform.
-// When specified on structures the field tag is "config" followed by the key name.
+// When specified on structures the field tag is "kvconfig" followed by the key name.
 package kvconfig
 
 import (
 	"fmt"
 	"reflect"
 )
+
+const structTagName = "kvconfig"
 
 type Setter interface {
 	Set(string, string)
@@ -46,8 +48,8 @@ func keyname(sfield *structAndField, c structCounter) (string, bool) {
 	if sfield == nil || sfield.structType == nil {
 		return "", false
 	}
-	if _, ok := sfield.field.Tag.Lookup("config"); !ok {
+	if _, ok := sfield.field.Tag.Lookup(structTagName); !ok {
 		return "", false
 	}
-	return fmt.Sprintf("%s_%d", sfield.field.Tag.Get("config"), c.Current(sfield.structType)-1), true
+	return fmt.Sprintf("%s_%d", sfield.field.Tag.Get(structTagName), c.Current(sfield.structType)-1), true
 }
