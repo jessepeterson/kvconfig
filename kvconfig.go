@@ -19,7 +19,7 @@ type Setter interface {
 
 type Getter interface {
 	Get(string) string
-	Exists(string) bool
+	Lookup(string) (string, bool)
 }
 
 type structCounter map[reflect.Type]int

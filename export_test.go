@@ -32,7 +32,7 @@ func TestSimpleStructExport1(t *testing.T) {
 	}
 
 	for k, v := range testTable {
-		if !kv.Exists(k) {
+		if _, ok := kv.Lookup(k); !ok {
 			t.Errorf("kv.Exists(%q) != true", k)
 		} else if av := kv.Get(k); av != v {
 			t.Errorf("kv.Get(%q) = %q; wanted %q", k, av, v)

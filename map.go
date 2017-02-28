@@ -23,9 +23,9 @@ func (m *MapStrStr) Get(k string) string {
 	return (*m)[k]
 }
 
-func (m *MapStrStr) Exists(k string) bool {
-	_, ok := (*m)[k]
-	return ok
+func (m *MapStrStr) Lookup(k string) (string, bool) {
+	v, ok := (*m)[k]
+	return v, ok
 }
 
 func (m *MapStrStr) WriteEnvFile(filename string) error {

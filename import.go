@@ -124,7 +124,7 @@ func importNewStruct(kv Getter, t reflect.Type, s *importState) (reflect.Value, 
 	for f := 0; f < t.NumField(); f += 1 {
 		field := t.Field(f)
 		kn, knok := keyname(&structAndField{t, field}, s.structCounter)
-		if knok && kv.Exists(kn) {
+		if _, ok := kv.Lookup(kn); knok && ok {
 			if !newStruct.IsValid() {
 				newStructPtr = reflect.New(t)
 				newStruct = newStructPtr.Elem()
