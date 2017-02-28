@@ -3,11 +3,17 @@ package kvconfig
 import "testing"
 
 func TestSimpleStructExport1(t *testing.T) {
+	type TestSubStruct struct {
+		TestSubString string `kvconfig:"test_sub_string"`
+		TestSubInt    int    `kvconfig:"test_sub_int"`
+	}
+
 	type TestStruct struct {
 		TestString    string  `kvconfig:"test_string"`
 		TestInt       int     `kvconfig:"test_int"`
 		TestPtrString *string `kvconfig:"test_ptr_string"`
 		TestPtrInt    *int    `kvconfig:"test_ptr_int"`
+		SubStructs    []*TestSubStruct
 	}
 
 	testStr := "test2"
@@ -18,6 +24,9 @@ func TestSimpleStructExport1(t *testing.T) {
 		TestInt:       1,
 		TestPtrString: &testStr,
 		TestPtrInt:    &testInt,
+		SubStructs: []*TestSubStruct{
+			&TestSubStruct{TestSubString: "test3", TestSubInt: 3},
+		},
 	}
 
 	kv := NewMap()
@@ -29,6 +38,8 @@ func TestSimpleStructExport1(t *testing.T) {
 		"test_int_0":        "1",
 		"test_ptr_string_0": "test2",
 		"test_ptr_int_0":    "2",
+		"test_sub_string_0": "test3",
+		"test_sub_int_0":    "3",
 	}
 
 	for k, v := range testTable {
