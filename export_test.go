@@ -2,7 +2,7 @@ package kvconfig
 
 import "testing"
 
-func TestSimpleStruct1(t *testing.T) {
+func TestSimpleStructExport1(t *testing.T) {
 	type TestStruct struct {
 		TestString    string  `kvconfig:"test_string"`
 		TestInt       int     `kvconfig:"test_int"`
