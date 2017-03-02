@@ -50,7 +50,7 @@ func TestSimpleStructImport1(t *testing.T) {
 	if ts.TestPtrInt == nil {
 		t.Error("TestStruct.TestPtrInt == nil")
 	} else if *(ts.TestPtrInt) != 2 {
-		t.Errorf("*(TestStruct.TestPtrInt) = %q; wanted %q", *(ts.TestPtrInt), 2)
+		t.Errorf("*(TestStruct.TestPtrInt) = %d; wanted %d", *(ts.TestPtrInt), 2)
 	}
 
 	if ts.SubStructs == nil {
