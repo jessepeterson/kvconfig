@@ -34,7 +34,7 @@ func TestSimpleStructImport1(t *testing.T) {
 	}
 
 	if ts.TestInt != 1 {
-		t.Errorf("TestStruct.TestInt = %q; wanted %q", ts.TestInt, 1)
+		t.Errorf("TestStruct.TestInt = %d; wanted %d", ts.TestInt, 1)
 	}
 
 	if ts.TestPtrString == nil {
@@ -57,7 +57,7 @@ func TestSimpleStructImport1(t *testing.T) {
 		t.Error("TestStruct.SubStructs[0] == nil")
 	} else {
 		if ts.SubStructs[0].TestSubInt != 3 {
-			t.Errorf("TestStruct.SubStructs[0].TestSubInt) = %q; wanted %q", ts.SubStructs[0].TestSubInt, 3)
+			t.Errorf("TestStruct.SubStructs[0].TestSubInt) = %d; wanted %d", ts.SubStructs[0].TestSubInt, 3)
 		}
 		if ts.SubStructs[0].TestSubString != "test3" {
 			t.Errorf("TestStruct.SubStructs[0].TestSubString) = %q; wanted %q", ts.SubStructs[0].TestSubString, "test3")
