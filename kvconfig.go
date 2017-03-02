@@ -51,5 +51,11 @@ func keyname(sfield *structAndField, c structCounter) (string, bool) {
 	if _, ok := sfield.field.Tag.Lookup(structTagName); !ok {
 		return "", false
 	}
-	return fmt.Sprintf("%s_%d", sfield.field.Tag.Get(structTagName), c.Current(sfield.structType)-1), true
+	ct := c.Current(sfield.structType)
+	if ct >= 1 {
+		ct = ct - 1
+	} else {
+		ct = 0
+	}
+	return fmt.Sprintf("%s_%d", sfield.field.Tag.Get(structTagName), ct), true
 }

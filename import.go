@@ -22,7 +22,7 @@ func Import(kv Getter, i interface{}) error {
 }
 
 func importWalk(kv Getter, v reflect.Value, sfield *structAndField, s *importState) (err error) {
-	if v.Kind() == reflect.Interface && v.NumMethod() == 0 || v.Kind() == reflect.Ptr {
+	if (v.Kind() == reflect.Interface && v.NumMethod() == 0) || (v.Kind() == reflect.Ptr && v.Elem().Kind() != reflect.Invalid) {
 		v = v.Elem()
 	}
 
@@ -50,6 +50,12 @@ func importWalk(kv Getter, v reflect.Value, sfield *structAndField, s *importSta
 			case *rsa.PrivateKey:
 				cert := unmarshalRSAPrivateKey(kv.Get(kn))
 				v.Set(reflect.ValueOf(cert))
+			default:
+				switch v.Type().Elem().Kind() {
+				case reflect.Int, reflect.String:
+					v.Set(reflect.New(v.Type().Elem()))
+					err = importWalk(kv, v, sfield, s)
+				}
 			}
 		}
 	}
@@ -92,6 +98,7 @@ func importSlice(kv Getter, v reflect.Value, s *importState) (err error) {
 			v.SetLen(n + 1)
 			v.Index(n).Set(newStruct)
 
+			err = importStruct(kv, newStruct.Elem(), s)
 		}
 	}
 
@@ -116,8 +123,6 @@ func importNewStruct(kv Getter, t reflect.Type, s *importState) (reflect.Value, 
 		return reflect.Value{}, false
 	}
 
-	s.structCounter.Increment(t)
-
 	var newStruct reflect.Value
 	var newStructPtr reflect.Value
 
@@ -128,24 +133,7 @@ func importNewStruct(kv Getter, t reflect.Type, s *importState) (reflect.Value, 
 			if !newStruct.IsValid() {
 				newStructPtr = reflect.New(t)
 				newStruct = newStructPtr.Elem()
-			}
-
-			newField := newStruct.Field(f)
-			newType := newField.Type()
-
-			switch newType.Kind() {
-			case reflect.Int:
-				i, _ := strconv.Atoi(kv.Get(kn))
-				newField.SetInt(int64(i))
-			case reflect.String:
-				newField.SetString(kv.Get(kn))
-			case reflect.Ptr:
-				t := newField.Interface()
-				switch t.(type) {
-				case *rsa.PrivateKey:
-					cert := unmarshalRSAPrivateKey(kv.Get(kn))
-					newField.Set(reflect.ValueOf(cert))
-				}
+				break
 			}
 		}
 	}
