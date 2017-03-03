@@ -5,8 +5,10 @@ import (
 	"strconv"
 
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"fmt"
 )
 
 type exportState struct {
@@ -53,6 +55,11 @@ func exportWalk(v reflect.Value, sfield *structAndField, kv Setter, s *exportSta
 				pk := t.(*rsa.PrivateKey)
 				kv.Set(kn, marshalRSAPrivateKey(pk))
 			}
+		case *tls.Certificate:
+			if keyRaw, ct, ok := keynameRaw(sfield, s.structCounter); ok {
+				exportTLSCertificate(kv, keyRaw, ct, t.(*tls.Certificate))
+			}
+
 		default:
 			err = exportWalk(v.Elem(), sfield, kv, s)
 		}
@@ -98,4 +105,32 @@ func exportMap(v reflect.Value, kv Setter, s *exportState) (err error) {
 func marshalRSAPrivateKey(pk *rsa.PrivateKey) string {
 	der := x509.MarshalPKCS1PrivateKey(pk)
 	return base64.StdEncoding.EncodeToString(der)
+}
+
+func exportTLSCertificate(kv Setter, name string, ct int, tlsCert *tls.Certificate) {
+	if tlsCert == nil {
+		return
+	}
+
+	tC := *tlsCert
+
+	for i := 0; i < len(tC.Certificate); i++ {
+		if len(tC.Certificate[i]) > 0 {
+			certStr := base64.StdEncoding.EncodeToString(tC.Certificate[i])
+			var keyName string
+			if i < 1 {
+				keyName = fmt.Sprintf("%s_cert_%d", name, ct)
+			} else {
+				keyName = fmt.Sprintf("%s_cert%d_%d", name, i+1, ct)
+			}
+			kv.Set(keyName, certStr)
+		}
+	}
+
+	if tC.PrivateKey != nil {
+		keyBytes := x509.MarshalPKCS1PrivateKey(tC.PrivateKey.(*rsa.PrivateKey))
+		keyStr := base64.StdEncoding.EncodeToString(keyBytes)
+		keyName := fmt.Sprintf("%s_pk_%d", name, ct)
+		kv.Set(keyName, keyStr)
+	}
 }

@@ -45,11 +45,22 @@ type structAndField struct {
 
 // Tries to derive a numeric-ending key name from the number of times we've seen a structure
 func keyname(sfield *structAndField, c structCounter) (string, bool) {
-	if sfield == nil || sfield.structType == nil {
+	name, ct, ok := keynameRaw(sfield, c)
+
+	if !ok {
 		return "", false
 	}
-	if _, ok := sfield.field.Tag.Lookup(structTagName); !ok {
-		return "", false
+
+	return fmt.Sprintf("%s_%d", name, ct), true
+}
+
+func keynameRaw(sfield *structAndField, c structCounter) (string, int, bool) {
+	if sfield == nil || sfield.structType == nil {
+		return "", 0, false
+	}
+	lTagName, ok := sfield.field.Tag.Lookup(structTagName)
+	if !ok {
+		return "", 0, false
 	}
 	ct := c.Current(sfield.structType)
 	if ct >= 1 {
@@ -57,5 +68,5 @@ func keyname(sfield *structAndField, c structCounter) (string, bool) {
 	} else {
 		ct = 0
 	}
-	return fmt.Sprintf("%s_%d", sfield.field.Tag.Get(structTagName), ct), true
+	return lTagName, ct, true
 }

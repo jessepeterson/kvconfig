@@ -7,6 +7,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+
+	"crypto/tls"
+	"fmt"
 )
 
 type importState struct {
@@ -50,6 +53,15 @@ func importWalk(kv Getter, v reflect.Value, sfield *structAndField, s *importSta
 			case *rsa.PrivateKey:
 				cert := unmarshalRSAPrivateKey(kv.Get(kn))
 				v.Set(reflect.ValueOf(cert))
+			case *tls.Certificate:
+				n, ct, ok := keynameRaw(sfield, s.structCounter)
+				if ok {
+					tlsCert, ok := importTLSCertificate(kv, n, ct)
+					if ok {
+						s.structCounter.Increment(v.Type())
+						v.Set(reflect.ValueOf(tlsCert))
+					}
+				}
 			default:
 				switch v.Type().Elem().Kind() {
 				case reflect.Int, reflect.String:
@@ -122,7 +134,6 @@ func importNewStruct(kv Getter, t reflect.Type, s *importState) (reflect.Value, 
 	if t.Kind() != reflect.Struct {
 		return reflect.Value{}, false
 	}
-
 	var newStruct reflect.Value
 	var newStructPtr reflect.Value
 
@@ -145,4 +156,36 @@ func unmarshalRSAPrivateKey(s string) *rsa.PrivateKey {
 	x509bytes, _ := base64.StdEncoding.DecodeString(s)
 	cert, _ := x509.ParsePKCS1PrivateKey(x509bytes)
 	return cert
+}
+
+func importTLSCertificate(kv Getter, name string, ct int) (*tls.Certificate, bool) {
+	_, certOk := kv.Lookup(fmt.Sprintf("%s_cert_%d", name, ct))
+	keyStr, keyOk := kv.Lookup(fmt.Sprintf("%s_pk_%d", name, ct))
+
+	if !keyOk || !certOk {
+		return nil, false
+	}
+
+	tC := tls.Certificate{}
+
+	for i := 0; ; i++ {
+		var keyName string
+		if i < 1 {
+			keyName = fmt.Sprintf("%s_cert_%d", name, ct)
+		} else {
+			keyName = fmt.Sprintf("%s_cert%d_%d", name, i+1, ct)
+		}
+
+		if certStr, ok := kv.Lookup(keyName); ok {
+			certBytes, _ := base64.StdEncoding.DecodeString(certStr)
+			tC.Certificate = append(tC.Certificate, certBytes)
+		} else {
+			break
+		}
+	}
+
+	keyBytes, _ := base64.StdEncoding.DecodeString(keyStr)
+	tC.PrivateKey, _ = x509.ParsePKCS1PrivateKey(keyBytes)
+
+	return &tC, true
 }
