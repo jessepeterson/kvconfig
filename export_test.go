@@ -53,11 +53,11 @@ func TestSimpleStructExport1(t *testing.T) {
 		"test_sub_ptr_int_0":    "4",
 	}
 
-	for k, v := range testTable {
-		if _, ok := kv.Lookup(k); !ok {
-			t.Errorf("kv.Exists(%q) != true", k)
-		} else if av := kv.Get(k); av != v {
-			t.Errorf("kv.Get(%q) = %q; wanted %q", k, av, v)
+	for k, tV := range testTable {
+		if v, ok := kv.Lookup(k); ok == false {
+			t.Errorf("kv.Lookup(%q) = _, false; wanted _, true", k)
+		} else if v != tV {
+			t.Errorf("kv.Lookup(%q) = %q, _; wanted %q, _", k, v, tV)
 		}
 	}
 }
