@@ -32,7 +32,7 @@ func exportWalk(v reflect.Value, sfield *structAndField, kv Setter, s *exportSta
 	case reflect.Map:
 		err = exportMap(v, kv, s)
 	case reflect.Slice:
-		err = exportSlice(v, kv, s)
+		err = exportSlice(v, sfield, kv, s)
 	case reflect.Struct:
 		err = exportStruct(v, kv, s)
 	case reflect.String:
@@ -56,10 +56,14 @@ func exportWalk(v reflect.Value, sfield *structAndField, kv Setter, s *exportSta
 				kv.Set(kn, marshalRSAPrivateKey(pk))
 			}
 		case *tls.Certificate:
-			if keyRaw, ct, ok := keynameRaw(sfield, s.structCounter); ok {
-				exportTLSCertificate(kv, keyRaw, ct, t.(*tls.Certificate))
+			if sfield != nil && sfield.structType != nil {
+				fname, ok := sfield.field.Tag.Lookup(structTagName)
+				if ok {
+					ct := s.structCounter.Current(v.Type())
+					exportTLSCertificate(kv, fname, ct, t.(*tls.Certificate))
+					s.structCounter.Increment(v.Type())
+				}
 			}
-
 		default:
 			err = exportWalk(v.Elem(), sfield, kv, s)
 		}
@@ -82,9 +86,9 @@ func exportStruct(v reflect.Value, kv Setter, s *exportState) (err error) {
 	return
 }
 
-func exportSlice(v reflect.Value, kv Setter, s *exportState) (err error) {
+func exportSlice(v reflect.Value, sfield *structAndField, kv Setter, s *exportState) (err error) {
 	for i := 0; i < v.Len(); i += 1 {
-		err = exportWalk(v.Index(i), nil, kv, s)
+		err = exportWalk(v.Index(i), sfield, kv, s)
 		if err != nil {
 			break
 		}

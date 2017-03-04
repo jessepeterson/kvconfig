@@ -10,7 +10,8 @@ import (
 
 func TestTLSExport(t *testing.T) {
 	type TestStruct struct {
-		TLSCert *tls.Certificate `kvconfig:"tls_cert_test"`
+		TLSCert   *tls.Certificate   `kvconfig:"tls_cert_test"`
+		TLSCertSl []*tls.Certificate `kvconfig:"tls_cert_test"`
 	}
 
 	rsaCertB64 := "MIIDtTCCAp2gAwIBAgIJAMMMdz7/T5DIMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIEwpTb21lLVN0YXRlMSEwHwYDVQQKExhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwHhcNMTcwMzAzMDY1OTQ5WhcNMTgwMzAzMDY1OTQ5WjBFMQswCQYDVQQGEwJBVTETMBEGA1UECBMKU29tZS1TdGF0ZTEhMB8GA1UEChMYSW50ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqMbsFXOgm6B/sOu6Ueo22wMv+DISa372v6/7OOBFRhHZE3ZHD5gucZAwLQ2Rr4lG6D1w4AlgL43k1Xc6VHTfJ9BkbVUg+iW7ihKpGNbFhIC0ve0sdl0eB02cuhXdzkLMfvLliM+ad6uZ4LLpygOVt5+Tux2W0ok+8Us+H7Ghu14CdqHwTsssFycv3PP3ySEfV3NHbJIBjcOTYClCVfKkvgdOPbXimfSwJ/QHrFUdszlk33Vq9KCNclcbWcVPN64a4ou6PmlX9j6SPclD16pC2vMZ+PnXuKbTJiyAIzEFVhNcjpcSufuwBcxuF3bdO0NKgluKEJe2ke0bJWuZm9CzdQIDAQABo4GnMIGkMB0GA1UdDgQWBBRxYa+7s0rTxlT0H0abmgE17qejSjB1BgNVHSMEbjBsgBRxYa+7s0rTxlT0H0abmgE17qejSqFJpEcwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgTClNvbWUtU3RhdGUxITAfBgNVBAoTGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZIIJAMMMdz7/T5DIMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAAVFhV41ug8tCPLMembVXu4szz3MUftEYu4AvxV2x9/CHs8ueUC+eJSFCnQgPD953f1stmYQ/ZdJvoP20OJK6V7Pq1AoUGES9/hdAc5hFpg99+w5ySEeT9MkuKniT8a1jojV+kA2aJYuPY19KkMXFWnaZxSYcw3sT03iAYZHkG/yMEcpZau0GuB9qYrYPpptiG7gQT4IdRWJaKG4WtO4P6HJAnsfsmcl8janfBIjvuKURTutLcw/6/idAfHN1MFUqguITsJYqYPNCFRqvJ772GLcOZ1SPyNMe6NPcrYV3Wm5ExThiHR0xYWB7OHn/yoclffY1E2j6WLSriVh/sTt3FA="
@@ -22,8 +23,12 @@ func TestTLSExport(t *testing.T) {
 	key, _ := x509.ParsePKCS1PrivateKey(keyBytes)
 
 	testCert := tls.Certificate{Certificate: [][]byte{crtBytes}, PrivateKey: key}
+	testCert2 := tls.Certificate{Certificate: [][]byte{crtBytes}, PrivateKey: key}
 
-	ts := TestStruct{TLSCert: &testCert}
+	ts := TestStruct{
+		TLSCert:   &testCert,
+		TLSCertSl: []*tls.Certificate{&testCert2},
+	}
 
 	kv := NewMap()
 
@@ -32,6 +37,8 @@ func TestTLSExport(t *testing.T) {
 	testTable := map[string]string{
 		"tls_cert_test_cert_0": rsaCertB64,
 		"tls_cert_test_pk_0":   rsaKeyB64,
+		"tls_cert_test_cert_1": rsaCertB64,
+		"tls_cert_test_pk_1":   rsaKeyB64,
 	}
 
 	for k, tV := range testTable {
